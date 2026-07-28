@@ -1,4 +1,4 @@
-# 🩺 Doctor Appointment Booking System
+# 🩺CuraConnect - Doctor Appointment Booking System
 
 A full-stack web application designed to streamline doctor appointments, patient management, and admin workflows.
 
