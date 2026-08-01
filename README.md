@@ -7,9 +7,8 @@ It is built for **one hospital's own use** — not as a multi-hospital marketpla
 ---
 
 🔗 Live Demo
-Patient Website: [https://your-patient-site-url.com](https://doctor-appointment-frontend-2c3j.onrender.com)
-Admin Panel: [https://your-admin-panel-url.com](https://doctor-appointment-system-admin-3j9e.onrender.com)
-
+Patient Website: https://doctor-appointment-frontend-2c3j.onrender.com
+Admin Panel: https://doctor-appointment-system-admin-3j9e.onrender.com
 ---
 
 ## 🌐 What This Website Does
