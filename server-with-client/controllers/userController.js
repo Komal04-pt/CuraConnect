@@ -3,6 +3,7 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentsModel.js";
 import bcrypt, { hash } from "bcryptjs";
 import JWT from "jsonwebtoken";
+import { uploadBufferToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const userRegister = async (req, res) => {
   try {
@@ -88,13 +89,18 @@ export const updateUser = async (req, res) => {
         message: "User Id Not FOund",
       });
     }
-    const { name, phone, dob, image, gender, address } = req.body;
-    const photoToBase64 = req.file && req.file.buffer.toString("base64");
+    const { name, phone, dob, gender, address } = req.body;
+    const updateData = { name, dob, address, phone, gender };
+    // Only touch the image when a new file was uploaded
+    if (req.file) {
+      updateData.image = await uploadBufferToCloudinary(
+        req.file.buffer,
+        "curaconnect/users"
+      );
+    }
     const user = await userModel.findByIdAndUpdate(
       id,
-      {
-        $set: { name, dob, address, phone, gender, image: photoToBase64 },
-      },
+      { $set: updateData },
       { returnOriginal: false }
     );
     res.status(200).send({

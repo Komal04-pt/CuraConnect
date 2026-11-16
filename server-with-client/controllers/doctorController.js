@@ -1,4 +1,5 @@
 import doctorModel from "../models/doctorModel.js";
+import { uploadBufferToCloudinary } from "../utils/uploadToCloudinary.js";
 
 //add doctor
 export const addDoctor = async (req, res) => {
@@ -33,7 +34,9 @@ export const addDoctor = async (req, res) => {
         message: "Please Provide All Fields",
       });
     }
-    const photoBase64 = req.file && req.file.buffer.toString("base64");
+    const imageUrl = req.file
+      ? await uploadBufferToCloudinary(req.file.buffer, "curaconnect/doctors")
+      : undefined;
     const doctorData = {
       name,
       email,
@@ -43,7 +46,7 @@ export const addDoctor = async (req, res) => {
       gender,
       phone,
       address,
-      image: photoBase64,
+      image: imageUrl,
       speciality,
       experience,
     };
@@ -128,8 +131,16 @@ export const updateDoctor = async (req, res) => {
         message: "Please add doctor id",
       });
     }
-    const data = req.body;
-    const photoBase64 = req.file && req.file.buffer.toString("base64");
+    const data = { ...req.body };
+    if (req.file) {
+      data.image = await uploadBufferToCloudinary(
+        req.file.buffer,
+        "curaconnect/doctors"
+      );
+    } else if (typeof data.image === "string") {
+      // image sent as text (old value) - don't overwrite the stored image
+      delete data.image;
+    }
     const doctor = await doctorModel.findByIdAndUpdate(
       id,
       { $set: data },

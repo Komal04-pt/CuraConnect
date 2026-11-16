@@ -3,6 +3,7 @@ import "./User.css";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUserData } from "../../redux/actions/authActions";
 import toast from "react-hot-toast";
+import { getImageSrc } from "../../utils/getImageSrc";
 import { reset } from "../../redux/slice/authSlice";
 
 const EditUserProfile = ({ isOpen, onClose }) => {
@@ -55,10 +56,10 @@ const EditUserProfile = ({ isOpen, onClose }) => {
     if (image && typeof image !== "string") {
       return URL.createObjectURL(image);
     }
-    if (user?.image) {
-      return `data:image/jpeg;base64,${user.image}`;
-    }
-    return "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
+    return getImageSrc(
+      user?.image,
+      "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+    );
   };
 
   if (!isOpen) return null;

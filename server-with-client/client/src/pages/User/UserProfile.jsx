@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import EditUserProfile from "./EditUserProfile";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, reset } from "../../redux/slice/authSlice";
+import { getImageSrc } from "../../utils/getImageSrc";
 import { getLoginUserDetails } from "../../redux/actions/authActions";
 
 const UserProfile = () => {
@@ -45,9 +46,10 @@ const UserProfile = () => {
                 <div className="col-md-4 text-center mb-3 mb-md-0">
                   <img
                     src={
-                      user?.image
-                        ? `data:image/jpeg;base64,${user?.image}`
-                        : "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                      getImageSrc(
+                        user?.image,
+                        "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                      )
                     }
                     alt="userPic"
                     className="img-fluid rounded-circle border border-2 shadow-sm mx-auto"

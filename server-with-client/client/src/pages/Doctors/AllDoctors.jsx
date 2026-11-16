@@ -3,6 +3,7 @@ import "./AllDoctors.css";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { getAllDoctors } from "../../redux/actions/doctorActions";
+import { getImageSrc } from "../../utils/getImageSrc";
 import { reset } from "../../redux/slice/authSlice";
 
 const AllDoctors = () => {
@@ -30,7 +31,7 @@ const AllDoctors = () => {
                   
                   <div className="text-center pt-2 w-100">
                     <img
-                      src={d?.image || "https://static.thenounproject.com/png/1743561-200.png"}
+                      src={getImageSrc(d?.image, "https://static.thenounproject.com/png/1743561-200.png")}
                       alt={d?.name || "doctor"}
                       className="border doc-card-img-circle"
                     />

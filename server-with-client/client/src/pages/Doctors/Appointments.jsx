@@ -11,6 +11,7 @@ import {
   verifyPayment,
 } from "../../redux/actions/authActions";
 import toast from "react-hot-toast";
+import { getImageSrc } from "../../utils/getImageSrc";
 import { reset } from "../../redux/slice/authSlice";
 
 const Appointments = () => {
@@ -171,7 +172,7 @@ const Appointments = () => {
           <div className="col-12 col-md-4 d-flex flex-column align-items-center text-center border-end-md pb-3 pb-md-0">
             <div className="w-40 h-40 overflow-hidden rounded-circle border border-2 shadow-sm mb-3" style={{ width: "130px", height: "130px" }}>
               <img
-                src={docInfo?.image || "https://static.thenounproject.com/png/1743561-200.png"}
+                src={getImageSrc(docInfo?.image, "https://static.thenounproject.com/png/1743561-200.png")}
                 alt={docInfo?.name || "doctor image"}
                 className="w-full h-full object-fit-cover"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}

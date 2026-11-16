@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Layout from "../../components/Layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserDetails, getUserAppointments } from "../../redux/actions/userAction";
+import { getImageSrc } from "../../utils/getImageSrc";
 import { useParams } from "react-router-dom";
 
 const UserDetails = () => {
@@ -39,7 +40,7 @@ const UserDetails = () => {
             <div className="col-12 col-md-3 text-center mb-3 mb-md-0">
               {user?.image ? (
                 <img
-                  src={`data:image/jpeg;base64,${user?.image}`}
+                  src={getImageSrc(user?.image)}
                   alt="userImage"
                   className="rounded-circle border shadow-sm img-fluid"
                   style={{ width: "90px", height: "90px", objectFit: "cover" }}

@@ -38,6 +38,20 @@ app.get("/", (req, res) => {
   res.send("<h1> Node Server Running </h1>");
 });
 
+//upload / generic error handler (e.g. file too large, not an image)
+app.use((err, req, res, next) => {
+  if (err) {
+    return res.status(400).send({
+      success: false,
+      message:
+        err.code === "LIMIT_FILE_SIZE"
+          ? "Image too large (max 2 MB)"
+          : err.message || "Something went wrong",
+    });
+  }
+  next();
+});
+
 //port
 const PORT = process.env.PORT || 5000;
 
