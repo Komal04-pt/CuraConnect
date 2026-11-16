@@ -8,7 +8,10 @@ export const uploadBufferToCloudinary = (buffer, folder = "curaconnect") =>
       {
         folder,
         resource_type: "image",
-        transformation: [{ width: 600, height: 600, crop: "limit" }, { quality: "auto" }],
+        transformation: [
+          { width: 600, height: 600, crop: "limit" },
+          { quality: "auto" },
+        ],
       },
       (error, result) => {
         if (error) return reject(error);
@@ -17,3 +20,20 @@ export const uploadBufferToCloudinary = (buffer, folder = "curaconnect") =>
     );
     stream.end(buffer);
   });
+
+// Deletes an existing Cloudinary image using its secure_url
+export const deleteFromCloudinary = async (imageUrl) => {
+  try {
+    if (!imageUrl || !imageUrl.includes("res.cloudinary.com")) return;
+    const parts = imageUrl.split("/upload/")[1];
+    if (!parts) return;
+    const withoutVersion = parts.replace(/^v\d+\//, "");
+    const publicId = withoutVersion.substring(
+      0,
+      withoutVersion.lastIndexOf(".")
+    );
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.log("Cloudinary delete warning:", error.message);
+  }
+};

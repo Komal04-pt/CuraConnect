@@ -6,6 +6,9 @@ import toast from "react-hot-toast";
 import { getImageSrc } from "../../utils/getImageSrc";
 import { reset } from "../../redux/slice/authSlice";
 
+const DEFAULT_AVATAR =
+  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
+
 const EditUserProfile = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
 
@@ -15,6 +18,7 @@ const EditUserProfile = ({ isOpen, onClose }) => {
   const [dob, setDob] = useState("");
   const [address, setAddress] = useState("");
   const [image, setImage] = useState("");
+  const [removeImage, setRemoveImage] = useState(false);
 
   const { user, success, error } = useSelector((state) => state.auth);
 
@@ -26,12 +30,29 @@ const EditUserProfile = ({ isOpen, onClose }) => {
       setDob(user?.dob || "");
       setAddress(user?.address || "");
       setImage(user?.image || "");
+      setRemoveImage(false);
     }
   }, [user]);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setRemoveImage(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setImage("");
+    setRemoveImage(true);
+  };
+
   const handleUpdate = (id) => {
     const formData = new FormData();
-    formData.append("image", image);
+    if (image && typeof image !== "string") {
+      formData.append("image", image);
+    }
+    formData.append("removeImage", removeImage ? "true" : "false");
     formData.append("name", name);
     formData.append("phone", phone);
     formData.append("address", address);
@@ -43,7 +64,7 @@ const EditUserProfile = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (success) {
-      toast.success("user Updated!");
+      toast.success("User Updated!");
       dispatch(reset());
       onClose();
     }
@@ -53,20 +74,27 @@ const EditUserProfile = ({ isOpen, onClose }) => {
   }, [dispatch, success, error, onClose]);
 
   const renderUserImage = () => {
+    if (removeImage) {
+      return DEFAULT_AVATAR;
+    }
     if (image && typeof image !== "string") {
       return URL.createObjectURL(image);
     }
-    return getImageSrc(
-      user?.image,
-      "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
-    );
+    return getImageSrc(user?.image, DEFAULT_AVATAR);
   };
+
+  const hasPhoto =
+    !removeImage &&
+    ((image && typeof image !== "string") || Boolean(user?.image));
 
   if (!isOpen) return null;
   return (
     <>
       <div className="editModal modal d-block" tabIndex={-1}>
-        <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "450px" }}>
+        <div
+          className="modal-dialog modal-dialog-centered"
+          style={{ maxWidth: "450px" }}
+        >
           <div className="modal-content">
             <div className="modal-header py-2">
               <h6 className="modal-title fw-bold">Edit Your Profile</h6>
@@ -80,21 +108,36 @@ const EditUserProfile = ({ isOpen, onClose }) => {
             </div>
             <div className="modal-body py-3">
               <div className="mod-details d-flex flex-column gap-2">
-                
-                <div className="text-center mb-1">
+                <div className="text-center mb-1 d-flex flex-column align-items-center gap-2">
                   <img
                     src={renderUserImage()}
                     alt="userPic"
                     height={100}
                     width={100}
-                    style={{ objectFit: "cover", borderRadius: "50%", border: "2px solid #ccc" }}
+                    style={{
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                      border: "2px solid #ccc",
+                    }}
                   />
+                  {hasPhoto && (
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm py-0 px-2"
+                      style={{ fontSize: "12px" }}
+                      onClick={handleRemovePhoto}
+                    >
+                      <i className="fa-solid fa-trash-can me-1"></i>
+                      Remove Photo
+                    </button>
+                  )}
                 </div>
-                
+
                 <input
                   type="file"
+                  accept="image/*"
                   className="form-control form-control-sm"
-                  onChange={(e) => setImage(e.target.files[0])}
+                  onChange={handleFileChange}
                 />
                 <input
                   type="text"
@@ -113,11 +156,11 @@ const EditUserProfile = ({ isOpen, onClose }) => {
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
-                  
-                  <input 
-                    type="date" 
+
+                  <input
+                    type="date"
                     className="form-control form-control-sm"
-                    placeholder="dob"  
+                    placeholder="dob"
                     value={dob}
                     onChange={(e) => setDob(e.target.value)}
                   />

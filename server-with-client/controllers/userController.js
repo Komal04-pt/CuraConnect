@@ -3,7 +3,10 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentsModel.js";
 import bcrypt, { hash } from "bcryptjs";
 import JWT from "jsonwebtoken";
-import { uploadBufferToCloudinary } from "../utils/uploadToCloudinary.js";
+import {
+  uploadBufferToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/uploadToCloudinary.js";
 
 export const userRegister = async (req, res) => {
   try {
@@ -86,23 +89,42 @@ export const updateUser = async (req, res) => {
     if (!id) {
       return res.status(404).send({
         success: false,
-        message: "User Id Not FOund",
+        message: "User Id Not Found",
       });
     }
-    const { name, phone, dob, gender, address } = req.body;
+
+    const existingUser = await userModel.findById(id);
+    if (!existingUser) {
+      return res.status(404).send({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+
+    const { name, phone, dob, gender, address, removeImage } = req.body;
     const updateData = { name, dob, address, phone, gender };
-    // Only touch the image when a new file was uploaded
+
     if (req.file) {
+      if (existingUser.image) {
+        await deleteFromCloudinary(existingUser.image);
+      }
       updateData.image = await uploadBufferToCloudinary(
         req.file.buffer,
         "curaconnect/users"
       );
+    } else if (removeImage === "true") {
+      if (existingUser.image) {
+        await deleteFromCloudinary(existingUser.image);
+      }
+      updateData.image = "";
     }
+
     const user = await userModel.findByIdAndUpdate(
       id,
       { $set: updateData },
       { returnOriginal: false }
     );
+
     res.status(200).send({
       success: true,
       message: "Profile Updated Successfully",
@@ -216,7 +238,7 @@ export const getUserDetails = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error In get  users details API",
+      message: "Error In get users details API",
       error,
     });
   }

@@ -28,7 +28,7 @@ const migrate = async (Model, folder) => {
   console.log(`${Model.modelName}: migrated ${done} of ${docs.length}`);
 };
 
-await mongoose.connect(`${process.env.MONGO_LOCAL_URI}/doctorapp`);
+await mongoose.connect(process.env.MONGO_LOCAL_URI);
 await migrate(userModel, "curaconnect/users");
 await migrate(doctorModel, "curaconnect/doctors");
 await mongoose.disconnect();
