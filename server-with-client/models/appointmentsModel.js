@@ -28,6 +28,17 @@ const appointmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes for faster lookups
+appointmentSchema.index({ userId: 1 });
+appointmentSchema.index({ doctorId: 1, slotDate: 1 });
+
+// Prevent double booking: one *scheduled* appointment per doctor + date + time.
+// Cancelled / completed ones don't block the slot, so it can be booked again after a cancel.
+appointmentSchema.index(
+  { doctorId: 1, slotDate: 1, slotTime: 1 },
+  { unique: true, partialFilterExpression: { visitStatus: "scheduled" } }
+);
+
 const appointmentModel = mongoose.model("appointment", appointmentSchema);
 
 export default appointmentModel;

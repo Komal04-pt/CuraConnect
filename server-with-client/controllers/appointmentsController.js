@@ -7,11 +7,35 @@ import crypto from "crypto";
 // 1. Create Appointment (Fresh Booking)
 export const bookAppointment = async (req, res) => {
   try {
-    const { userId, doctorId, amount, slotDate, slotTime } = req.body;
-    if (!userId || !doctorId || !amount || !slotTime || !slotDate) {
+    const { userId, doctorId, amount } = req.body;
+    const slotDate = req.body.slotDate?.trim();
+    const slotTime = req.body.slotTime?.trim();
+
+    if (!userId) {
+      return res.status(401).send({
+        success: false,
+        message: "Please login first to book an appointment.",
+      });
+    }
+
+    if (!doctorId || !amount || !slotTime || !slotDate) {
       return res.status(400).send({
         success: false,
-        message: "Please provide all fields",
+        message: "Please select a valid date and time slot.",
+      });
+    }
+
+    // Double-booking check: is this doctor's slot already taken?
+    const slotTaken = await appointmentModel.findOne({
+      doctorId,
+      slotDate,
+      slotTime,
+      visitStatus: "scheduled",
+    });
+    if (slotTaken) {
+      return res.status(409).send({
+        success: false,
+        message: "This slot is already booked. Please choose another time.",
       });
     }
 
@@ -31,11 +55,17 @@ export const bookAppointment = async (req, res) => {
       appointment,
     });
   } catch (error) {
+    // Two people booking at the same moment: the unique index rejects the second one
+    if (error.code === 11000) {
+      return res.status(409).send({
+        success: false,
+        message: "This slot is already booked. Please choose another time.",
+      });
+    }
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error In create appointment API",
-      error,
+      message: error.message || "Unable to book appointment. Please try again.",
     });
   }
 };
@@ -155,7 +185,7 @@ export const updateAppointmentSattus = async (req, res) => {
   }
 };
 
-// 5. Get User Appointments (User Panel Dashboard) 
+// 5. Get User Appointments (User Panel Dashboard)
 export const getUserAppointments = async (req, res) => {
   try {
     const { id } = req.params;
@@ -173,7 +203,9 @@ export const getUserAppointments = async (req, res) => {
       });
     }
 
-    const appoinmtent = await appointmentModel.find({ userId: user?._id }).populate("doctorId");
+    const appoinmtent = await appointmentModel
+      .find({ userId: user?._id })
+      .populate("doctorId");
     res.status(200).send({
       success: true,
       message: "Your Appointments",
@@ -202,7 +234,7 @@ export const getUserAppointmentDetails = async (req, res) => {
     }
 
     const appointment = await appointmentModel.findById(id).populate("doctorId");
-    
+
     if (!appointment) {
       return res.status(404).send({
         success: false,

@@ -43,11 +43,10 @@ const Appointments = () => {
   const extractTime = (ObjectTime) => {
     let hours = ObjectTime.getHours();
     const minutes = ObjectTime.getMinutes();
-    const second = ObjectTime.getSeconds();
     const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
     hours = hours ? hours : 12;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(second).padStart(2, "0")} ${ampm}`;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00 ${ampm}`;
   };
 
   const getMinTime = () => {
@@ -67,6 +66,11 @@ const Appointments = () => {
   const [bookingStage, setBookingStage] = useState("idle");
 
   const handleBooking = (paymentMode) => {
+    if (!user?._id) {
+      toast.error("Please login first to book an appointment.");
+      return;
+    }
+
     const bookingData = {
       userId: user?._id,
       doctorId: id,
@@ -168,36 +172,55 @@ const Appointments = () => {
     <>
       <div className="container py-4 px-3" style={{ minHeight: "60vh" }}>
         <div className="row justify-content-center border rounded-3 p-3 p-sm-4 bg-white shadow-sm mx-1">
-          
           <div className="col-12 col-md-4 d-flex flex-column align-items-center text-center border-end-md pb-3 pb-md-0">
-            <div className="w-40 h-40 overflow-hidden rounded-circle border border-2 shadow-sm mb-3" style={{ width: "130px", height: "130px" }}>
+            <div
+              className="w-40 h-40 overflow-hidden rounded-circle border border-2 shadow-sm mb-3"
+              style={{ width: "130px", height: "130px" }}
+            >
               <img
-                src={getImageSrc(docInfo?.image, "https://static.thenounproject.com/png/1743561-200.png")}
+                src={getImageSrc(
+                  docInfo?.image,
+                  "https://static.thenounproject.com/png/1743561-200.png"
+                )}
                 alt={docInfo?.name || "doctor image"}
                 className="w-full h-full object-fit-cover"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             </div>
             <h6 className="fw-bold mb-1 text-dark text-sm">{docInfo?.name}</h6>
-            <span className={`badge ${docInfo?.available ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"} px-2.5 py-1 text-xs fw-semibold`}>
+            <span
+              className={`badge ${
+                docInfo?.available
+                  ? "bg-success-subtle text-success"
+                  : "bg-danger-subtle text-danger"
+              } px-2.5 py-1 text-xs fw-semibold`}
+            >
               {docInfo?.available ? "Available" : "Not Available"}
             </span>
           </div>
 
           <div className="col-12 col-md-8 text-start ps-md-4 pt-3 pt-md-0">
             <div className="small text-muted mb-2">
-              <span className="fw-semibold text-dark">Experience:</span> {docInfo?.experience} Year's
+              <span className="fw-semibold text-dark">Experience:</span>{" "}
+              {docInfo?.experience} Year's
             </div>
             <div className="mb-3">
-              <span className="fw-semibold text-dark small d-block mb-1">About Doctor:</span>
-              <p className="text-secondary small leading-relaxed mb-0">{docInfo?.about}</p>
+              <span className="fw-semibold text-dark small d-block mb-1">
+                About Doctor:
+              </span>
+              <p className="text-secondary small leading-relaxed mb-0">
+                {docInfo?.about}
+              </p>
             </div>
             <h6 className="fw-bold text-dark mb-3 text-sm">
-              Consultation Fee : <span className="text-teal-700">₹{docInfo?.fees}</span>
+              Consultation Fee :{" "}
+              <span className="text-teal-700">₹{docInfo?.fees}</span>
             </h6>
-            
+
             <div className="date-time p-3 bg-light rounded-3 border">
-              <h6 className="small fw-semibold text-dark mb-2">Select Your Booking Date & Time : 👇</h6>
+              <h6 className="small fw-semibold text-dark mb-2">
+                Select Your Booking Date & Time : 👇
+              </h6>
               <div className="w-100 mb-2">
                 <DatePicker
                   className="form-control form-control-sm border-teal-600 text-center"
@@ -216,7 +239,9 @@ const Appointments = () => {
               </div>
               <p className="text-muted m-0" style={{ fontSize: "12px" }}>
                 <strong>Selected Slot:</strong>{" "}
-                {selectedDateTime ? selectedDateTime.toLocaleString() : "Please Select a date & Time"}
+                {selectedDateTime
+                  ? selectedDateTime.toLocaleString()
+                  : "Please Select a date & Time"}
               </p>
             </div>
 
@@ -226,7 +251,9 @@ const Appointments = () => {
                 onClick={() => handleBooking("online")}
                 disabled={!docInfo?.available || bookingStage !== "idle"}
               >
-                {bookingStage !== "idle" && bookingStage !== "bookingCashOnly" ? "Processing..." : "Pay Online"}
+                {bookingStage !== "idle" && bookingStage !== "bookingCashOnly"
+                  ? "Processing..."
+                  : "Pay Online"}
               </button>
 
               <button
@@ -234,15 +261,18 @@ const Appointments = () => {
                 onClick={() => handleBooking("cash")}
                 disabled={!docInfo?.available || bookingStage !== "idle"}
               >
-                {bookingStage === "bookingCashOnly" ? "Processing..." : "Pay at Hospital (Cash)"}
+                {bookingStage === "bookingCashOnly"
+                  ? "Processing..."
+                  : "Pay at Hospital (Cash)"}
               </button>
             </div>
 
             {!docInfo?.available && (
-              <p className="text-danger small fw-medium mt-2 mb-0">Doctor is currently not accepting bookings.</p>
+              <p className="text-danger small fw-medium mt-2 mb-0">
+                Doctor is currently not accepting bookings.
+              </p>
             )}
           </div>
-
         </div>
       </div>
     </>
