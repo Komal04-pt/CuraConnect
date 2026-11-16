@@ -1,4 +1,5 @@
 import appointmentModel from "../models/appointmentsModel.js";
+import { getPagination, pageInfo } from "../utils/paginate.js";
 import doctorModel from "../models/doctorModel.js";
 import userModel from "../models/userModel.js";
 import getRazorpayInstance from "../config/razorpay.js";
@@ -73,11 +74,16 @@ export const bookAppointment = async (req, res) => {
 // 2. Get All Appointments (Admin Panel)
 export const getAllAppointments = async (req, res) => {
   try {
-    const appointments = await appointmentModel.find({});
+    const pg = getPagination(req);
+    const totalCount = await appointmentModel.countDocuments({});
+    let query = appointmentModel.find({}).sort({ createdAt: -1 });
+    if (pg) query = query.skip(pg.skip).limit(pg.limit);
+    const appointments = await query;
     res.status(200).send({
       success: true,
       message: "All Appointments Fetched",
-      totalCount: appointments.length,
+      totalCount,
+      ...pageInfo(pg, totalCount),
       appointments,
     });
   } catch (error) {

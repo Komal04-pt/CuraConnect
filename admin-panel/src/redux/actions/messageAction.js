@@ -3,9 +3,9 @@ import API from "../../Api/API";
 
 export const getAllMessages = createAsyncThunk(
   "message/getAllMessages",
-  async (_, thunkApi) => {
+  async (params, thunkApi) => {
     try {
-      const res = await API.get("/api/v1/webmessage/get-all");
+      const res = await API.get("/api/v1/webmessage/get-all", { params });
       return res.data;
     } catch (error) {
       const message =

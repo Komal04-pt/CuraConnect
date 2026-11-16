@@ -1,12 +1,10 @@
 import userModel from "../models/userModel.js";
+import { getPagination, pageInfo } from "../utils/paginate.js";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentsModel.js";
 import bcrypt, { hash } from "bcryptjs";
 import JWT from "jsonwebtoken";
-import {
-  uploadBufferToCloudinary,
-  deleteFromCloudinary,
-} from "../utils/uploadToCloudinary.js";
+import { uploadBufferToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const userRegister = async (req, res) => {
   try {
@@ -89,42 +87,23 @@ export const updateUser = async (req, res) => {
     if (!id) {
       return res.status(404).send({
         success: false,
-        message: "User Id Not Found",
+        message: "User Id Not FOund",
       });
     }
-
-    const existingUser = await userModel.findById(id);
-    if (!existingUser) {
-      return res.status(404).send({
-        success: false,
-        message: "User Not Found",
-      });
-    }
-
-    const { name, phone, dob, gender, address, removeImage } = req.body;
+    const { name, phone, dob, gender, address } = req.body;
     const updateData = { name, dob, address, phone, gender };
-
+    // Only touch the image when a new file was uploaded
     if (req.file) {
-      if (existingUser.image) {
-        await deleteFromCloudinary(existingUser.image);
-      }
       updateData.image = await uploadBufferToCloudinary(
         req.file.buffer,
         "curaconnect/users"
       );
-    } else if (removeImage === "true") {
-      if (existingUser.image) {
-        await deleteFromCloudinary(existingUser.image);
-      }
-      updateData.image = "";
     }
-
     const user = await userModel.findByIdAndUpdate(
       id,
       { $set: updateData },
       { returnOriginal: false }
     );
-
     res.status(200).send({
       success: true,
       message: "Profile Updated Successfully",
@@ -192,11 +171,17 @@ export const updatePassword = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.find({ isAdmin: false });
+    const pg = getPagination(req);
+    const filter = { isAdmin: false };
+    const totalCount = await userModel.countDocuments(filter);
+    let query = userModel.find(filter).sort({ createdAt: -1 });
+    if (pg) query = query.skip(pg.skip).limit(pg.limit);
+    const users = await query;
     res.status(200).send({
       success: true,
       message: "All Users",
-      totalCount: users.length,
+      totalCount,
+      ...pageInfo(pg, totalCount),
       users,
     });
   } catch (error) {
@@ -238,7 +223,7 @@ export const getUserDetails = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error In get users details API",
+      message: "Error In get  users details API",
       error,
     });
   }
@@ -246,20 +231,27 @@ export const getUserDetails = async (req, res) => {
 
 export const getStats = async (req, res) => {
   try {
-    const users = await userModel.find({});
-    const doctors = await doctorModel.find({});
-    const appoinmtents = await appointmentModel.aggregate([
-      {
-        $group: { _id: null, totalEarning: { $sum: { $toDouble: "$amount" } } },
-      },
-    ]);
-    const total = appoinmtents.length > 0 ? appoinmtents[0].totalEarning : 0;
+    // count in the database instead of loading every document into memory
+    const [totalUsers, totalAdmins, totalDoctors, totalAppointments, earningsAgg] =
+      await Promise.all([
+        userModel.countDocuments({ isAdmin: false }),
+        userModel.countDocuments({ isAdmin: true }),
+        doctorModel.countDocuments({}),
+        appointmentModel.countDocuments({}),
+        appointmentModel.aggregate([
+          { $match: { payment: true } }, // only paid appointments count as earnings
+          { $group: { _id: null, totalEarning: { $sum: { $toDouble: "$amount" } } } },
+        ]),
+      ]);
+    const total = earningsAgg.length > 0 ? earningsAgg[0].totalEarning : 0;
     res.status(200).send({
       success: true,
       message: "All Stats",
       stats: {
-        totalUsers: users.length,
-        totalDoctors: doctors.length,
+        totalUsers,
+        totalAdmins,
+        totalDoctors,
+        totalAppointments,
         earnings: total,
       },
     });
@@ -352,11 +344,17 @@ export const createAdmin = async (req, res) => {
 
 export const getAllAdmins = async (req, res) => {
   try {
-    const admins = await userModel.find({ isAdmin: true });
+    const pg = getPagination(req);
+    const filter = { isAdmin: true };
+    const totalCount = await userModel.countDocuments(filter);
+    let query = userModel.find(filter).sort({ createdAt: -1 });
+    if (pg) query = query.skip(pg.skip).limit(pg.limit);
+    const admins = await query;
     res.status(200).send({
       success: true,
       message: "All Admins",
-      totalCount: admins.length,
+      totalCount,
+      ...pageInfo(pg, totalCount),
       admins,
     });
   } catch (error) {

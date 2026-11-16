@@ -3,9 +3,10 @@ import API from "../../Api/API";
 
 export const getAllUsers = createAsyncThunk(
   "user/getAllUsers",
-  async (_, thunkApi) => {
+  async (params, thunkApi) => {
     try {
-      const res = await API.get("/api/v1/user/get-all");
+      // params is optional: { page, limit } -> paginated, nothing -> all users
+      const res = await API.get("/api/v1/user/get-all", { params });
       return res.data;
     } catch (error) {
       const message =

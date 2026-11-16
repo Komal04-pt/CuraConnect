@@ -11,6 +11,7 @@ const messageSlice = createSlice({
     loading: false,
     success: false,
     messages: null,
+    pagination: null,
     error: null,
   },
   reducers: {
@@ -27,6 +28,11 @@ const messageSlice = createSlice({
       .addCase(getAllMessages.fulfilled, (state, action) => {
         state.loading = false;
         state.messages = action.payload.webMessages;
+        state.pagination = {
+          totalCount: action.payload.totalCount,
+          page: action.payload.page || 1,
+          totalPages: action.payload.totalPages || 1,
+        };
       })
       .addCase(getAllMessages.rejected, (state, action) => {
         state.loading = false;

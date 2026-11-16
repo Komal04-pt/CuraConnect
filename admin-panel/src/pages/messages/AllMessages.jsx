@@ -12,20 +12,23 @@ import "./AllMessages.css";
 
 const AllMessages = () => {
   const dispatch = useDispatch();
-  const { messages, success, error } = useSelector((state) => state.message);
+  const { messages, pagination, success, error } = useSelector((state) => state.message);
   const [replyBoxId, setReplyBoxId] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const totalPages = pagination?.totalPages || 1;
 
   useEffect(() => {
     dispatch(reset());
-    dispatch(getAllMessages());
-  }, [dispatch]);
+    dispatch(getAllMessages({ page, limit }));
+  }, [dispatch, page]);
 
   useEffect(() => {
     if (success) {
       toast.success("Action completed successfully");
       dispatch(reset());
-      dispatch(getAllMessages());
+      dispatch(getAllMessages({ page, limit }));
       setReplyBoxId(null);
       setReplyText("");
     }
@@ -33,7 +36,7 @@ const AllMessages = () => {
       toast.error(error);
       dispatch(reset());
     }
-  }, [success, error, dispatch]);
+  }, [success, error, dispatch, page]);
 
   const handleReplySubmit = (id) => {
     if (!replyText.trim()) {
@@ -65,7 +68,7 @@ const AllMessages = () => {
       <div className="messages-header">
         <div>
           <h2>All Messages</h2>
-          <p>{messages?.length || 0} total messages</p>
+          <p>{pagination?.totalCount ?? messages?.length ?? 0} total messages</p>
         </div>
       </div>
 
@@ -150,6 +153,26 @@ const AllMessages = () => {
       ) : (
         <p className="text-center text-muted mt-5">No messages found.</p>
       )}
+
+      <div className="d-flex justify-content-center align-items-center gap-3 my-3">
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={page <= 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          ← Prev
+        </button>
+        <span className="small">
+          Page {page} of {totalPages}
+        </span>
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={page >= totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next →
+        </button>
+      </div>
     </Layout>
   );
 };

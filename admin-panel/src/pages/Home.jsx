@@ -2,8 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import Layout from "../components/Layout/Layout";
-import { getAllUsers, getAllAdmins } from "../redux/actions/userAction"; 
-import { getAllDoctors } from "../redux/actions/doctorActions";
+import { getStats } from "../redux/actions/userAction";
 import { getUserData } from "../redux/actions/authActions"; 
 import "./Home.css";
 
@@ -12,16 +11,13 @@ const Home = () => {
   const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.auth || {});
-  const { users, admins } = useSelector((state) => state.user || {});
-  const { doctors } = useSelector((state) => state.doctor || {});
+  const { stats } = useSelector((state) => state.user || {});
 
   useEffect(() => {
     if (!user) {
       dispatch(getUserData());
     }
-    dispatch(getAllUsers());
-    dispatch(getAllDoctors());
-    dispatch(getAllAdmins());
+    dispatch(getStats());
   }, [dispatch, user]);
 
   return (
@@ -39,7 +35,7 @@ const Home = () => {
           <div className="card p-4 border-0 shadow-sm d-flex flex-row align-items-center gap-3 bg-white rounded-3">
             <div className="fs-1 text-secondary"><i className="fa-solid fa-users"></i></div>
             <div>
-              <h2 className="fw-bold mb-0">{users?.length || 0}</h2>
+              <h2 className="fw-bold mb-0">{stats?.totalUsers || 0}</h2>
               <span className="text-muted small">Total Users</span>
             </div>
           </div>
@@ -48,7 +44,7 @@ const Home = () => {
           <div className="card p-4 border-0 shadow-sm d-flex flex-row align-items-center gap-3 bg-white rounded-3">
             <div className="fs-1 text-secondary"><i className="fa-solid fa-heart-pulse"></i></div>
             <div>
-              <h2 className="fw-bold mb-0">{doctors?.length || 0}</h2>
+              <h2 className="fw-bold mb-0">{stats?.totalDoctors || 0}</h2>
               <span className="text-muted small">Total Doctors</span>
             </div>
           </div>
@@ -57,7 +53,7 @@ const Home = () => {
           <div className="card p-4 border-0 shadow-sm d-flex flex-row align-items-center gap-3 bg-white rounded-3">
             <div className="fs-1 text-secondary"><i className="fa-solid fa-user-shield"></i></div>
             <div>
-              <h2 className="fw-bold mb-0">{admins?.length || 0}</h2> 
+              <h2 className="fw-bold mb-0">{stats?.totalAdmins || 0}</h2> 
               <span className="text-muted small">Total Admins</span>
             </div>
           </div>
@@ -66,7 +62,7 @@ const Home = () => {
           <div className="card p-4 border-0 shadow-sm d-flex flex-row align-items-center gap-3 bg-white rounded-3">
             <div className="fs-1 text-secondary"><i className="fa-solid fa-dollar-sign"></i></div>
             <div>
-              <h2 className="fw-bold mb-0">₹15700</h2>
+              <h2 className="fw-bold mb-0">₹{(stats?.earnings || 0).toLocaleString("en-IN")}</h2>
               <span className="text-muted small">Total Earnings</span>
             </div>
           </div>

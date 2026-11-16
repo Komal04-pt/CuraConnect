@@ -4,15 +4,15 @@ import API from "../../Api/API";
 //get all appointment
 export const getAllAppointments = createAsyncThunk(
   "appointment/getAllAppointments",
-  async (_, thunkApi) => {
+  async (params, thunkApi) => {
     try {
-      const res = await API.get("/api/v1/appointment/get-all");
+      const res = await API.get("/api/v1/appointment/get-all", { params });
       return res.data;
     } catch (error) {
       const message =
         error?.response?.data?.message ||
         error.message ||
-        "get all appointments  error";
+        "get all appointments error";
       return thunkApi.rejectWithValue(message);
     }
   }
@@ -29,7 +29,7 @@ export const getAppointmentDetails = createAsyncThunk(
       const message =
         error?.response?.data?.message ||
         error.message ||
-        "getAppointmentDetails  error";
+        "getAppointmentDetails error";
       return thunkApi.rejectWithValue(message);
     }
   }
@@ -48,7 +48,7 @@ export const updateAppointmentStatus = createAsyncThunk(
       const message =
         error?.response?.data?.message ||
         error.message ||
-        "update appointment/update-status status  doc  error";
+        "update appointment/update-status status doc error";
       return thunkApi.rejectWithValue(message);
     }
   }

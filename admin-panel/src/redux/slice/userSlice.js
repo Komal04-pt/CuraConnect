@@ -21,6 +21,7 @@ const userSlice = createSlice({
     error: null,
     appointments: null,
     stats: null,
+    pagination: null,
     admins: null,
     admin: null,
     adminActionSuccess: false,
@@ -41,6 +42,11 @@ const userSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.users = action.payload.users;
+        state.pagination = {
+          totalCount: action.payload.totalCount,
+          page: action.payload.page || 1,
+          totalPages: action.payload.totalPages || 1,
+        };
       })
       .addCase(getAllUsers.rejected, (state, action) => {
         state.loading = false;

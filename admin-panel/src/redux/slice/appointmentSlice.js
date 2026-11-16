@@ -11,16 +11,17 @@ const doctorSlice = createSlice({
   initialState: {
     loading: false,
     success: false,
-    statusUpdateSuccess: false,  
+    statusUpdateSuccess: false,
     appointments: null,
     appointment: null,
+    pagination: null,
     error: null,
   },
   reducers: {
     reset: (state) => {
       state.error = null;
       state.success = false;
-      state.statusUpdateSuccess = false; 
+      state.statusUpdateSuccess = false;
     },
   },
   extraReducers: (builder) => {
@@ -33,6 +34,11 @@ const doctorSlice = createSlice({
         state.loading = false;
         state.success = true;
         state.appointments = action.payload.appointments;
+        state.pagination = {
+          totalCount: action.payload.totalCount,
+          page: action.payload.page || 1,
+          totalPages: action.payload.totalPages || 1,
+        };
       })
       .addCase(getAllAppointments.rejected, (state, action) => {
         state.loading = false;
@@ -57,7 +63,7 @@ const doctorSlice = createSlice({
       })
       .addCase(updateAppointmentStatus.fulfilled, (state) => {
         state.loading = false;
-        state.statusUpdateSuccess = true;  
+        state.statusUpdateSuccess = true;
       })
       .addCase(updateAppointmentStatus.rejected, (state, action) => {
         state.loading = false;

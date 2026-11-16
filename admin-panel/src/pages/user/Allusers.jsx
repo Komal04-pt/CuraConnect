@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../components/Layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllUsers } from "../../redux/actions/userAction";
@@ -7,11 +7,15 @@ import "./Allusers.css";
 
 const Allusers = () => {
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getAllUsers());
-  }, [dispatch]);
+  const [page, setPage] = useState(1);
+  const limit = 10;
 
-  const { users } = useSelector((state) => state.user);
+  useEffect(() => {
+    dispatch(getAllUsers({ page, limit }));
+  }, [dispatch, page]);
+
+  const { users, pagination } = useSelector((state) => state.user);
+  const totalPages = pagination?.totalPages || 1;
 
   const getInitials = (name) => {
     if (!name) return "?";
@@ -28,7 +32,7 @@ const Allusers = () => {
     <Layout>
       <div className="users-header">
         <h2>All Users</h2>
-        <p>{users?.length || 0} registered patients</p>
+        <p>{pagination?.totalCount ?? users?.length ?? 0} registered patients</p>
       </div>
 
       <div className="users-table-wrapper">
@@ -46,7 +50,7 @@ const Allusers = () => {
             {users &&
               users.map((user, i) => (
                 <tr key={i + 1}>
-                  <td>{i + 1}</td>
+                  <td>{(page - 1) * limit + i + 1}</td>
                   <td>
                     <div className="user-name-cell">
                       <div
@@ -78,6 +82,26 @@ const Allusers = () => {
               ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="d-flex justify-content-center align-items-center gap-3 my-3">
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={page <= 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          ← Prev
+        </button>
+        <span className="small">
+          Page {page} of {totalPages}
+        </span>
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={page >= totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next →
+        </button>
       </div>
     </Layout>
   );

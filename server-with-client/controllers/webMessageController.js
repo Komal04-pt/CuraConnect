@@ -1,4 +1,5 @@
 import webmessageModel from "../models/webMessage.js";
+import { getPagination, pageInfo } from "../utils/paginate.js";
 
 export const createMessage = async (req, res) => {
   try {
@@ -33,11 +34,16 @@ export const createMessage = async (req, res) => {
 
 export const getAllMessages = async (req, res) => {
   try {
-    const webMessages = await webmessageModel.find({}).sort({ createdAt: -1 });
+    const pg = getPagination(req);
+    const totalCount = await webmessageModel.countDocuments({});
+    let query = webmessageModel.find({}).sort({ createdAt: -1 });
+    if (pg) query = query.skip(pg.skip).limit(pg.limit);
+    const webMessages = await query;
     res.status(200).send({
       success: true,
       message: "all web messages",
-      totalCount: webMessages.length,
+      totalCount,
+      ...pageInfo(pg, totalCount),
       webMessages,
     });
   } catch (error) {

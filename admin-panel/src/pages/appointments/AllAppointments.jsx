@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../components/Layout/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -7,10 +7,15 @@ import "./AllAppointments.css";
 
 const AllAppointments = () => {
   const dispatch = useDispatch();
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
   useEffect(() => {
-    dispatch(getAllAppointments());
-  }, [dispatch]);
-  const { appointments } = useSelector((state) => state.appointments);
+    dispatch(getAllAppointments({ page, limit }));
+  }, [dispatch, page]);
+
+  const { appointments, pagination } = useSelector((state) => state.appointments);
+  const totalPages = pagination?.totalPages || 1;
 
   const getStatusLabel = (status) => {
     switch (status) {
@@ -45,7 +50,7 @@ const AllAppointments = () => {
       <div className="appointments-header">
         <div>
           <h2>All Appointments</h2>
-          <p>{appointments?.length || 0} total bookings</p>
+          <p>{pagination?.totalCount ?? appointments?.length ?? 0} total bookings</p>
         </div>
       </div>
 
@@ -65,8 +70,8 @@ const AllAppointments = () => {
           </thead>
           <tbody>
             {appointments?.map((a, i) => (
-              <tr key={i + 1}>
-                <td>{i + 1}</td>
+              <tr key={a?._id || i}>
+                <td>{(page - 1) * limit + i + 1}</td>
                 <td className="text-muted small-id">{a?._id}</td>
                 <td>{a?.slotDate}</td>
                 <td>{a?.slotTime}</td>
@@ -93,7 +98,28 @@ const AllAppointments = () => {
           </tbody>
         </table>
       </div>
+
+      <div className="d-flex justify-content-center align-items-center gap-3 my-3">
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={page <= 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          ← Prev
+        </button>
+        <span className="small">
+          Page {page} of {totalPages}
+        </span>
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          disabled={page >= totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next →
+        </button>
+      </div>
     </Layout>
   );
 };
+
 export default AllAppointments;
